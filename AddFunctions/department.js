@@ -3,7 +3,7 @@ let faculty = require('../models/Faculty');
 
 async function addDepartment(req, res, next) {
     const { HODName, HODPSRN, HODEmail, HODPhone, HODRoom, HODDesg, DeptCode, DeptName } = req.body
-    const probableFaculty = await faculty.find({psrn:HODPSRN, name: HODName, email: HODEmail})
+    const probableFaculty = await faculty.find({psrn:HODPSRN, name:HODName})
  
     if(probableFaculty.length != 0){
         const createdfaculty = probableFaculty[0]

@@ -27,6 +27,7 @@ async function addCourse(req, res, next) {
             const newInstructor = await faculty.find({
                 psrn: instructor
             })
+            console.log(instructor, newInstructor)
             newInstructors.push(newInstructor[0]._id);
         }
         newSections.push({
