@@ -3,6 +3,9 @@ const Course = require("./models/Course");
 const Department = require("./models/Dept");
 const Faculty = require("./models/Faculty");
 const { default: axios } = require("axios");
+
+const urlEndpoint = "http://localhost:5000"
+
 require('dotenv').config();
 
 async function migrate(){
@@ -17,16 +20,11 @@ async function migrate(){
     catch (error) {
         console.log('❌ MongoDB connection error:', error.message);
     }
-    const hod = await Faculty.findById("63d22c7c20f5ed0616715c0b")
-    console.log(hod);
-
+    
     // await addDepartments();
     // await addFaculties();
-    // await getCourses();
-    const courses = await Course.find();
-    courses.forEach((course)=>{
-        console.log(course.sections)
-    })
+    await getCourses();
+    
 }
 
 async function addDepartments() {
@@ -36,7 +34,7 @@ async function addDepartments() {
         depts.forEach(async (dept) => {
             const hod = await Faculty.findById(dept.hod);
             if(hod!=null){
-                axios.post("http://localhost:5000/department", { 
+                axios.post(`${urlEndpoint}/department`, { 
                     HODName: hod.name, 
                     HODPSRN: hod.psrn, 
                     HODEmail: hod.email, 
@@ -63,7 +61,7 @@ async function addFaculties(){
         faculties.forEach(async (faculty)=>{
             const department = await Department.findById(faculty.dept);
             if (department!=null){
-                axios.post("http://localhost:5000/faculty",{
+                axios.post(`${urlEndpoint}/faculty`,{
                     psrn: faculty.psrn,
                     name: faculty.name,
                     email: faculty.email,
@@ -83,7 +81,8 @@ async function getCourses() {
     try {
         const courses = await Course.find();
         for (const course of courses) {
-            const {id,
+            const {
+                compCode,
                 courseCode,
                 deptCode,
                 name,
@@ -97,18 +96,53 @@ async function getCourses() {
                 offeredBy,
                 offeredTo,
                 offeredToYear,
-                offeredInSem} = course;
-                const newOfferedBy = []
-                for (const dept of offeredBy){
-                    const department = await Department.findById(dept);
-                    if(department!=null){
-                        newOfferedBy.push(department.deptCode);
-                    }
-                   
+                offeredInSem, 
+                ic
+            } = course;
+            const newOfferedBy = []
+            for (const dept of offeredBy){
+                const department = await Department.findById(dept);
+                if(department!=null){
+                    newOfferedBy.push(department.deptCode);
                 }
-                for (const section in sections){
-                    
-                }
+            }
+            const newSections = []
+            sections.forEach(async (section)=>{
+                const newInstructors = [];
+                section.instructors.forEach(async (instructor)=>{
+                    const newInstructor = await Faculty.findById(instructor);
+                    newInstructors.push(newInstructor.psrn);
+                });
+                
+                newSections.push({
+                    instructors: newInstructors,
+                    section: section.section
+                });
+            })
+            let newIC
+            if (ic){
+                newIC = await Faculty.findById(ic);
+            }
+            axios.post(`${urlEndpoint}/course`,{
+                compCode: compCode,
+                courseCode: courseCode,
+                deptCode: deptCode,
+                name: name,
+                courseStrength: courseStrength,
+                totalUnits: totalUnits,
+                lectureUnits: lectureUnits,
+                labUnits: labUnits,
+                sections: newSections,
+                active: active,
+                offeredAs: offeredAs,
+                offeredBy: newOfferedBy,
+                offeredTo: offeredTo,
+                offeredToYear: offeredToYear,
+                offeredInSem: offeredInSem, 
+                ic: newIC
+            }).then((response)=> {
+                console.log(response);
+            })
         }
     }
     catch (err){

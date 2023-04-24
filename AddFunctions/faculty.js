@@ -12,7 +12,7 @@ async function addFaculty(req, res, next){
         room, 
         desg 
     } = req.body;
-    const probableFaculty = await faculty.find({psrn:psrn, name: name, email: email});
+    const probableFaculty = await faculty.find({psrn:psrn, name: name, email: email, phone:phone, room:room, desg: desg});
     if(probableFaculty.length != 0){
         return res.status(200).json(probableFaculty[0]);
     }
