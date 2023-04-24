@@ -1,5 +1,8 @@
 # TD Migrator
 
+
+### Create a .env file with the variable MONGODB_URI with the TTD atlas URI
+
 ## Usage:
 
 1. Run ```npm i```
