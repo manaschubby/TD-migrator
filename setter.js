@@ -5,6 +5,10 @@ const mongoose = require("mongoose");
 const addDepartment = require("./AddFunctions/department");
 const addCourse = require('./AddFunctions/course');
 const addFaculty = require('./AddFunctions/faculty');
+const addMasterTT = require('./AddFunctions/addMasterTT');
+const addPreferences = require('./AddFunctions/preferences');
+const addRooms = require('./AddFunctions/rooms');
+const addAccounts = require('./AddFunctions/accounts');
 async function main(){
     try{
         const db = await mongoose.connect("mongodb://localhost:27017/TD");
@@ -23,6 +27,10 @@ async function main(){
         app.post("/department", addDepartment);
         app.post("/course", addCourse);
         app.post("/faculty", addFaculty);
+        app.post("/MasterTT", addMasterTT);
+        app.post("/prefs", addPreferences);
+        app.post("/rooms", addRooms);
+        app.post("/accounts", addAccounts);
         app.get("/", (req,res) => res.status(200).json({message:"Hello World"}))
         app.listen(5000, () => {
             console.log(`✅ Server is listening on port: ${5000}`);

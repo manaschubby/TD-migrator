@@ -2,6 +2,10 @@ const mongoose = require("mongoose")
 const Course = require("./models/Course");
 const Department = require("./models/Dept");
 const Faculty = require("./models/Faculty");
+const Preferences = require("./models/Preferences");
+const MasterTT = require("./models/MasterTT")
+const Room = require("./models/Room")
+const Account = require("./models/Account")
 const { default: axios } = require("axios");
 
 const urlEndpoint = "http://localhost:5000"
@@ -21,10 +25,13 @@ async function migrate(){
         console.log('❌ MongoDB connection error:', error.message);
     }
     
-    // await addDepartments();
-    // await addFaculties();
+    await addDepartments();
+    await addFaculties();
     await getCourses();
-    
+    await addMasterTT()
+    await addPreferences()
+    await addRooms()
+    await addAccounts()
 }
 
 async function addDepartments() {
@@ -147,6 +154,68 @@ async function getCourses() {
     }
     catch (err){
         console.log(err);
+    }
+}
+
+async function addMasterTT(){
+    const masterTT = await MasterTT.find();
+    for (const cl of masterTT){
+        axios.post(`${urlEndpoint}/MasterTT`,{
+            day: cl.day,
+            hour: cl.hour,
+            courseType: cl.courseType,
+            classType: cl.classType
+        })
+    }
+}
+
+async function addPreferences(){
+    const preferences = await Preferences.find();
+    for (const cl of preferences){
+        axios.post(`${urlEndpoint}/prefs`,{
+            key: cl.key,
+            value: cl.value
+        }).then((response)=>{
+            console.log(response.data);
+        })
+    }
+}
+
+async function addRooms() {
+    const rooms = await Room.find();
+    for (const room of rooms){
+        axios.post(`${urlEndpoint}/rooms`,{
+            block: room.block,
+            roomNumber: room.roomNumber,
+            classCapacity: room.classCapacity,
+            examCapacity: room.examCapacity,
+            roomType: room.roomType,
+            departmentSpecification: room.departmentSpecification,
+            impartus: room.impartus,
+            mic: room.mic,
+            speaker: room.speaker,
+            projector: room.projector,
+            smartBoard: room.smartBoard,
+            smartMonitor: room.smartMonitor,
+            biometric: room.biometric
+        }).then((response)=>{
+            console.log(response.data)
+        })
+    }
+}
+async function addAccounts(){
+    const accunts = await Account.find()
+    for (const account of accunts){
+        const newdept = [];
+        for (const department of account.dept){
+            const dept = await Department.findById(department);
+            newdept.push(dept.deptCode);
+        }
+        axios.post(`${urlEndpoint}/accounts`,{
+            dept: newdept,
+            email: account.email,
+            isAdmin: account.isAdmin
+        }).then((response)=>{console.log(response.data)})
     }
 }
 
